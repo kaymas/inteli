@@ -1,5 +1,5 @@
-let rows = 25
-let cols = 25
+let rows = 50
+let cols = 50
 let grid = new Array(cols)
 let openSet = []
 let closedSet = []
@@ -17,12 +17,20 @@ function Spot(x,y){
     this.h = 0
     this.neighbours = []
     this.previous = undefined
+    this.wall = false
+
+    if(random(1) < 0.4){
+        this.wall = true
+    }
 } 
 
 Spot.prototype.show = function(color){
     fill(color)
+    if(this.wall){
+        fill(0)
+    }
     noStroke()
-    rect(this.x * w,this.y * h, w - 1, h - 1)
+    ellipse(this.x * w + w / 2,this.y * h + h / 2, w/2, h/2)
 }
 
 Spot.prototype.addNeighbours = function(grid){
@@ -40,6 +48,18 @@ Spot.prototype.addNeighbours = function(grid){
     if(y > 0){
         this.neighbours.push(grid[x][y - 1])
     }
+    if(x > 0 && y > 0){
+        this.neighbours.push(grid[x - 1][y - 1])
+    }
+    if(x < cols - 1 && y > 0){
+        this.neighbours.push(grid[x + 1][y - 1])
+    }
+    if(x > 0 && y < rows - 1){
+        this.neighbours.push(grid[x - 1][y + 1])
+    }
+    if(x < cols - 1 && y < rows - 1){
+        this.neighbours.push(grid[x + 1][y + 1])
+    }
 }
 
 
@@ -52,8 +72,8 @@ function removeFromArray(arr, ele){
 }
 
 function heuristic(a,b){
-    return abs(a.x - b.x) + abs(a.y - b.y)
-    // return dist(a.x,a.y,b.x,b.y)
+    // return abs(a.x - b.x) + abs(a.y - b.y)
+    return dist(a.x,a.y,b.x,b.y)
 }
 
 function setup(){
@@ -79,8 +99,11 @@ function setup(){
         }
     }
 
-    start = grid[floor(cols / 2)][floor(rows / 2)]
+    start = grid[0][0]
     end = grid[cols - 1][rows - 1]
+    start.wall = false
+    end.wall = false
+
     openSet.push(start)
 }
 
@@ -128,31 +151,39 @@ function draw(){
             // neighbour.f = neighbour.g + neighbour.h
             // neighbour.previous = current
 
-            if(!closedSet.includes(neighbour)){
+            if(!closedSet.includes(neighbour) && !neighbour.wall){
                 
                 let tempG = current.g + 1
+                let newPath = false
 
                 if(openSet.includes(neighbour)){
                     if(tempG < neighbour.g){
                         neighbour.g = tempG
+                        newPath = true
                     }
                 }else{
                     neighbour.g = tempG
+                    newPath = true
                     openSet.push(neighbour)
                 }
 
-                neighbour.h = heuristic(neighbour, end)
-                neighbour.f = neighbour.g + neighbour.h
-                neighbour.previous = current
+                if(newPath){
+                    neighbour.h = heuristic(neighbour, end)
+                    neighbour.f = neighbour.g + neighbour.h
+                    neighbour.previous = current
+                }      
             }
 
         }
     
     }else{
         //no solution
+        console.log("no solution");
+        noLoop()
+        return
     }
 
-    background(51)
+    background(255)
 
     for(var i = 0; i < cols; i++){
         for(var j = 0; j < rows; j++){
@@ -160,13 +191,13 @@ function draw(){
         }
     }
 
-    for(var i = 0; i < closedSet.length; i++){
-        closedSet[i].show(color(255,0,0))
-    }
+    // for(var i = 0; i < closedSet.length; i++){
+    //     closedSet[i].show(color(255,0,0))
+    // }
 
-    for(var i = 0; i < openSet.length; i++){
-        openSet[i].show(color(0,255,0))
-    }
+    // for(var i = 0; i < openSet.length; i++){
+    //     openSet[i].show(color(0,255,0))
+    // }
 
     //find path
     path = []
@@ -176,8 +207,17 @@ function draw(){
         path.push(temp.previous)
         temp = temp.previous
     }
-    
+
+    // for(var i = 0; i < path.length; i++){
+    //     path[i].show(color(0,0,255))
+    // }
+
+    noFill()
+    stroke(color(105,0,250))
+    strokeWeight(w / 2)
+    beginShape()
     for(var i = 0; i < path.length; i++){
-        path[i].show(color(0,0,255))
+        vertex(path[i].x * w + w / 2, path[i].y * h + h / 2)
     }
+    endShape()
 }
