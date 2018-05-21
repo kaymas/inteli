@@ -1,5 +1,5 @@
 let cities = []
-let totalCities = 5
+let totalCities = 7
 let recordDistance
 let bestPath
 
@@ -23,7 +23,7 @@ function draw(){
     fill(255)
     cities.forEach(city => ellipse(city.x, city.y, 10, 10))
 
-    stroke(255)
+    stroke(255,255,255,100)
     strokeWeight(1)
     noFill()
     beginShape()
