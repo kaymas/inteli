@@ -33,6 +33,7 @@ class DNA {
             if(this.genes[i] == target.charAt(i)) score++
         }
         this.fitness = score / target.length
+        this.fitness = pow(this.fitness,3)
     }
 
     //crossover : mate DNA with another DNA

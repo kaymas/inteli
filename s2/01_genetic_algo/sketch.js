@@ -46,7 +46,6 @@ function setup(){
 
 function draw(){
     
-    population.naturalSelection() //generate mating pool
     population.generate() //generate next generation
     population.calcFitness()
 
@@ -63,6 +62,7 @@ function displayInfo(){
     
     let answer = population.getBest()
     bestPhrase.html("Best phrase:<br>" + answer)
+    bestPhrase.addClass('bigger')
 
     let statstext = "total generations:     " + population.getGenerations() + "<br>";
     statstext += "average fitness:       " + nf(population.getAverageFitness()) + "<br>";

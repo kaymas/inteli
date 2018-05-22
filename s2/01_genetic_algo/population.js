@@ -22,40 +22,43 @@ class Population {
         this.population.forEach(element => element.calcFitness(target))
     }
 
-    //generate mating pool
-    naturalSelection(){
-        this.matingPool = []
-        
-        let maxFitness = 0
-        this.population.forEach(element => {
-            if(element.fitness > maxFitness) maxFitness = element.fitness
-        })
-
-        //add elements of the population to the mating pool based on their fitness. 
-        //higher fitness = more entries in mating pool = more likely to be picked as a parent
-        //lower fitness = fewer entries in mating pool = less likely to be picked as a parent
-
-        this.population.forEach(element => {            
-            let fitness = map(element.fitness, 0, maxFitness, 0, 1)
-            let n = floor(fitness * 100)
-            for(let i = 0; i < n; i++){
-                this.matingPool.push(element)
-            }
-        })        
-    }
-
-    //create a new generation based on current mating pool
+    //create a new generation based on current population (consider their fitness)
     generate(){
+
+        // normalizing the fitness of current generation
+        let sum = 0
+        let normalized = []
+        this.population.forEach(element => {
+            sum += element.fitness
+        })
+        for(let i = 0; i < this.population.length; i++) {
+            normalized[i] = this.population[i].fitness / sum
+        }
+        
+        let newPopulation = []
+
         for(let i = 0; i < this.population.length; i++){
-            let a = floor(random(this.matingPool.length))
-            let b = floor(random(this.matingPool.length))
-            let parentA = this.matingPool[a]
-            let parentB = this.matingPool[b]
+            let parentA = this.selectOne(normalized)
+            let parentB = this.selectOne(normalized)
             let child = parentA.crossover(parentB)
             child.mutate(this.mutationRate)
-            this.population[i] = child
+            newPopulation[i] = child
         }
+        this.population = newPopulation
         this.generations++
+    }
+
+    //selecting a partner to mate with using simplified rejection sampling procedure
+    selectOne(normalized){ 
+        let index = 0
+        let r = random(1)
+
+        while(r > 0){
+            r = r - normalized[index]
+            index++
+        }
+        index--
+        return this.population[index]
     }
 
     getBest(){        
@@ -74,7 +77,7 @@ class Population {
         }
 
         this.best = this.population[index].getPhrase()
-        if(worldRecord == this.perfectScore) this.finished = true
+        if(worldRecord == this.perfectScore) this.finished = true 
     }
 
     isFinished(){
