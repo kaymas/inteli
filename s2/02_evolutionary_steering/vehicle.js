@@ -4,13 +4,19 @@ class Vehicle {
         this.acceleration = createVector(0,0)
         this.velocity = createVector(0,-2)
         this.position = createVector(x,y)
-        this.r = 6
+        this.r = 4
         this.maxspeed = 4
         this.maxforce = 0.4
+        this.dna = []
+        this.dna[0] = random(-5,5)
+        this.dna[1] = random(-5,5)
+        this.health = 1
     }
 
     //update position
     update(){
+        this.health -= 0.009
+
         this.velocity.add(this.acceleration)
         this.velocity.limit(this.maxspeed)
         this.position.add(this.velocity)
@@ -19,6 +25,22 @@ class Vehicle {
 
     applyForce(force){
         this.acceleration.add(force)
+    }
+
+    isDead(){
+        return (this.health < 0) 
+    }
+
+    //calculate steers for food and poison and then apply them based on dna info(weighted)
+    behaviours(good,bad){
+        let steerG = this.eat(good, 0.1)
+        let steerB = this.eat(bad, -0.5)
+    
+        steerG.mult(this.dna[0])
+        steerB.mult(this.dna[1])
+
+        this.applyForce(steerG)
+        this.applyForce(steerB)
     }
 
     //calculate steering force (desired - current) towards a target
@@ -30,11 +52,12 @@ class Vehicle {
         let steer = p5.Vector.sub(desired, this.velocity)
         steer.limit(this.maxforce)
 
-        this.applyForce(steer)
+        // this.applyForce(steer)
+        return steer
     }
 
-    eat(food){
-        //calculate closest food distance
+    eat(food, nutrition){
+        //calculate closest food 
         let closestDist = Infinity
         let closest = null
         food.forEach(element => {
@@ -48,19 +71,32 @@ class Vehicle {
         if(closestDist < 5){
             let index = food.indexOf(closest)
             food.splice(index, 1)
+            this.health += nutrition 
+        }else if(closest != null){
+            return this.seek(closest)
         }
 
-        this.seek(closest)
+        return createVector(0,0)
     }
 
     display(){
         let theta = this.velocity.heading() + PI / 2
-        fill(120)
-        stroke(200)
-        strokeWeight(1)
         push()
         translate(this.position.x, this.position.y)
         rotate(theta)
+
+        // stroke(0,255,0)
+        // line(0,0,0,-this.dna[0]*10)
+        // stroke(255,0,0)
+        // line(0,0,0,-this.dna[1]*10)
+
+        let green = color(0,255,0)
+        let red = color(255,0,0)
+        let col = lerpColor(red,green,this.health)
+
+        fill(col)
+        stroke(col)
+        strokeWeight(1)
         beginShape()
         vertex(0, -this.r * 2);
         vertex(-this.r, this.r * 2);
