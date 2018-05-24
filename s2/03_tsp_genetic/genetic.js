@@ -1,13 +1,19 @@
-function calcFitness(){    
+function calcFitness(){ 
+    let currentRecord = Infinity   
     for(let i = 0; i < population.length; i++){        
         let d = calcDistance(cities,population[i])
         if(d < recordDistance){
             recordDistance = d
             bestPath = population[i]
         }
+        if(d < currentRecord){
+            currentRecord = d
+            currentPath = population[i]
+        }
         fitness[i] = 1 / (d + 1)
     }        
     console.log(recordDistance);
+    recordDistP.html(`Total Distance = ${recordDistance}`)
 }
 
 function normFitness(){
@@ -23,17 +29,37 @@ function normFitness(){
 function nextGeneration(){
     let newPopulation = []
     population.forEach(element => {
-        let order = selectOne(population, fitness)
-        mutate(order)
+        let orderA = selectOne(population, fitness)
+        let orderB = selectOne(population, fitness)
+        let order = crossOver(orderA, orderB)
+        mutate(order,0.03)
         newPopulation.push(order)
     })
     population = newPopulation
 }
 
-function mutate(order, mutationRate){
-    let indexA = floor(random(order.length))
-    let indexB = floor(random(order.length))
-    swap(order,indexA,indexB)
+function mutate(order, mutationRate = 0.1){
+    for(let i = 0; i < totalCities; i++){
+       if(random(1) < mutationRate){
+            let indexA = floor(random(order.length))
+            let indexB = (indexA + 1) % totalCities
+            swap(order,indexA,indexB)
+       } 
+    }
+}
+
+function crossOver(orderA, orderB){
+    let start = floor(random(orderA.length))
+    let end = floor(random(start + 1, orderA.length))
+    let newOrder = orderA.slice(start, end)
+
+    for(let i = 0; i < orderB.length; i++){
+        let city = orderB[i]
+        if(!newOrder.includes(city)){
+            newOrder.push(city)
+        }
+    }
+    return newOrder
 }
 
 function selectOne(list, prob){ 

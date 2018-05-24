@@ -1,20 +1,27 @@
 let cities = []
-let totalCities = 8
+let totalCities = 15
 let recordDistance = Infinity
 let bestPath
+let currentPath
 
-let popSize = 300
+let popSize = 500
 let population = []
 let fitness = []
 
+let recordDistP
+
 function setup(){
-    createCanvas(500,700)
+    createCanvas(700,700)
     background(51)
+    recordDistP = createP()
+    recordDistP.position(750,10)
+    recordDistP.addClass('big')
+    recordDistP.html(`Total Distance = ${Infinity}`)
 
     let order = [] // 0:(totalCities - 1)
 
     for(let i = 0; i < totalCities; i++){
-        let v = createVector(random(25,width-25),random(25, height - 25))
+        let v = createVector(random(10, width- 10), random(10, (height / 2) - 10))
         cities[i] = v
         order[i] = i
     }
@@ -40,7 +47,15 @@ function draw(){
     noFill()
     beginShape()
     bestPath.forEach(cityId => vertex(cities[cityId].x, cities[cityId].y))
-    endShape() 
+    endShape()
+    
+    translate(0,height / 2)
+    stroke(255,0,255,100)
+    strokeWeight(4)
+    noFill()
+    beginShape()
+    currentPath.forEach(cityId => vertex(cities[cityId].x, cities[cityId].y))
+    endShape()
 }
 
 let shuffleArray = function(arr){
@@ -53,7 +68,7 @@ let calcDistance = function(points,order){
     for(let i = 0; i < order.length - 1; i++){
         let cityA = points[order[i]]
         let cityB = points[order[i+1]]
-        let d = dist(cityA.x, cityA.y, cityB.x, cityB.y)
+        let d = dist(cityA.x, cityA.y, cityB.x, cityB.y) //can use lookup table here instead
         sum += d
     }
     return sum
