@@ -61,23 +61,14 @@ function setup(){
 
         console.log(user);
         
-        let nnEuclidean = findNearestNeighbours(user, euclidean)   
-        let nnPearson = findNearestNeighbours(user, pearson)  
-        
-        resultE.html(`<hr>${k} nearest Neighbours (based on Euclidean Distance) are : `)
-        for(let i = 0; i < k; i++){
-            let name = nnEuclidean['neighbours'][i]
-            let similarity = Number(nnEuclidean['similarity'][name]).toFixed(3)
-            let div = createP(`${name} : ${similarity}`)
-            resultE.child(div)
-        }
-
-        resultP.html(`<hr>${k} nearest Neighbours (based on Pearson Correlation) are : `)
-        for(let i = 0; i < k; i++){
-            let name = nnPearson['neighbours'][i]
-            let similarity = Number(nnPearson['similarity'][name]).toFixed(3)
-            let div = createP(`${name} : ${similarity}`)
-            resultP.child(div)
+        let rec = getRecommendations('user', euclidean) 
+        console.log(rec);
+                  
+        for(let i = 0; i < rec['movieList'].length; i++){
+            let movie = rec['movieList'][i] 
+            let rating = rec['ratings'][movie].ranking
+            let para = createP(`${movie} : ${nf(rating,1,1)}`)
+            para.parent(resultE)
         }
     })
 }
@@ -151,32 +142,54 @@ pearson = function(ratings1, ratings2){
 
 }
 
-findNearestNeighbours = function(rating, simMeasure){
-
-    let similarityScores = {}
+getRecommendations = function(user, simMeasure){
+    
+    let recommendations = {}
 
     for(let i = 0; i < users.length; i++){
-        let user = users[i]
-        let otherRating = ratings[user]
-        if(otherRating != rating){
-            let similarity = simMeasure(rating, otherRating)
-            similarityScores[user] = similarity
+        let other = users[i]        
+
+        if(other != user){
+            
+            let similarity = simMeasure(ratings[user],ratings[other])                                    
+            if(similarity <= 0) continue
+                        
+            let otherMovies = Object.keys(ratings[other]) // get movie names rated by other
+            
+            for(let j = 0; j < otherMovies.length; j++){
+                let otherMovie = otherMovies[j]                                
+
+                if(!ratings[user][otherMovie]){ //if I haven't rated this movie
+                   
+                    if(recommendations[otherMovie] == undefined){ // if I haven't seen this movie with someone else
+                        recommendations[otherMovie] = { //initialize it then
+                            total : 0,  //sum of ratings weighted by similarity
+                            simSum : 0, //similarity sum
+                            ranking : 0
+                        }
+                    }
+                    recommendations[otherMovie].total += ratings[other][otherMovie]  * similarity
+                    recommendations[otherMovie].simSum += similarity
+                }
+            }
         }
     }
 
-    console.log(similarityScores);
-
-    let tempUsers = users.slice()
-    tempUsers.sort((userA, userB) => {
-        let scoreA = similarityScores[userA]
-        let scoreB = similarityScores[userB]
-        return scoreB - scoreA
-    })
-
-    console.log(tempUsers);
-    
-    return {
-        'neighbours' : tempUsers,
-        'similarity' : similarityScores
+    //Calculate the estimated star rating for each movie
+    let tempMovies = Object.keys(recommendations)
+    for(let i = 0; i < tempMovies.length; i++){
+        let movie = tempMovies[i]             
+        recommendations[movie].ranking = recommendations[movie].total / recommendations[movie].simSum
     }
+
+    //Sort movies by ranking
+    tempMovies.sort((a,b) => {
+        return recommendations[b].ranking - recommendations[a].ranking
+    })        
+
+    return {
+        movieList : tempMovies,
+        ratings : recommendations
+    }
+    
 }
