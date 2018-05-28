@@ -1,7 +1,7 @@
 let perceptron
 let training = new Array(200)
 
-//coordinate space
+//coordinate space with origin at center of the canvas
 let xmin = -1
 let ymin = -1
 let xmax = 1

@@ -12,7 +12,7 @@ class Perceptron{
         let guess = this.feedforward(inputs)
         let error = desired - guess //this can only jave values 0,-2,2 since labels can be -1 or 1
         for(let i = 0; i < this.weights.length; i++){
-            this.weights[i] += error * inputs[i] * this.c
+            this.weights[i] += error * inputs[i] * this.c   //gradient descent
         }
     }
 
