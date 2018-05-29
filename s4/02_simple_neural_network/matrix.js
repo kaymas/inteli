@@ -54,15 +54,15 @@ class Matrix{
     toArray() {
         let arr = [];
         for (let i = 0; i < this.rows; i++) {
-        for (let j = 0; j < this.cols; j++) {
-            arr.push(this.data[i][j]);
-        }
+            for (let j = 0; j < this.cols; j++) {
+                arr.push(this.data[i][j]);
+            }
         }
         return arr;
     }
 
     randomize(){
-        return this.map(e => Math.random() * 2 - 1)
+        return this.map(e => Math.random() * 2 - 1) //random value between -1 and 1
     }
 
     add(a){
