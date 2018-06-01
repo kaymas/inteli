@@ -29,11 +29,13 @@ function loss(pred, label){
 function draw(){
     background(51)
 
-    if(X.length > 0){
-        //train
-        let yArr = tf.tensor1d(Y)
-        optimizer.minimize(() => loss(predict(X),yArr))
-    }
+    tf.tidy(() => {
+        if(X.length > 0){
+            //train
+            let yArr = tf.tensor1d(Y)
+            optimizer.minimize(() => loss(predict(X),yArr))
+        }
+    })
 
     stroke(255)
     strokeWeight(8)
@@ -44,8 +46,9 @@ function draw(){
     }
 
     const x_arr = [0, 1]
-    const y_norm = predict([0, 1])
+    const y_norm = tf.tidy(() => predict([0, 1]))
     const y_arr = y_norm.dataSync()
+    y_norm.dispose()
     
     let x1 = map(x_arr[0],0,1,0,width)
     let x2 = map(x_arr[1],0,1,0,width)
