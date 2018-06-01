@@ -13,6 +13,8 @@ let trains = {}
 
 let nn
 
+let message = document.querySelector('#message')
+
 function preload(){
     cats_data = loadBytes('cats.bin')
     trains_data = loadBytes('trains.bin')
@@ -20,7 +22,7 @@ function preload(){
 
 function setup(){
     createCanvas(280,280)
-    background(51)
+    background(255)
 
     train_length = floor(train_length)
 
@@ -40,22 +42,58 @@ function setup(){
     testing = testing.concat(cats.testing)
     testing = testing.concat(trains.testing)
 
-    //testing
-    console.log("initial testing without training");
-    let test_result = test_all(testing)
-    console.log("% correct: ", test_result);
-
-    //iterative training
-    for(let i = 0; i < 5; i++){
-        //training 
+    //train buttom
+    let trainButton = select('#trainBtn')
+    let trainGeneration = 0
+    trainButton.mousePressed(() => {  
+        console.log("training...");
         train_nn(training)
-        console.log("trained");
+        trainGeneration++
+        console.log("Generation : ", trainGeneration)
+        message.innerHTML = `Finished training generation ${trainGeneration}.`
+    })
 
-        //testing
+    //test button
+    let testButton = select('#testBtn')
+    testButton.mousePressed(() => {
         let test_result = test_all(testing)
-        console.log("% correct: ", test_result);
+        console.log("% correct: ", nf(test_result,2,2))
+        message.innerHTML = `% of correctness: ${nf(test_result,2,2)}`
+    })
+
+    //guess button
+    let guessButton = select('#guessBtn')
+    guessButton.mousePressed(() => {
+        let inputs = []
+        let img = get() //grabs pixesl from canvas
+        img.resize(28,28)
+        img.loadPixels()
+        for(let i = 0; i < len; i++){
+            let brightness = img.pixels[i * 4]
+            inputs[i] = (255 - brightness) / 255.0
+        }
+        // console.log(inputs);
         
-    }
+        let guess = nn.predict(inputs)
+        console.log(guess);
+        let m = max(guess)
+        let classification = guess.indexOf(m)
+        if(classification === CAT){
+            console.log("cat");
+            message.innerHTML = "Guessed Cat."
+        }else if(classification === TRAIN){
+            console.log("train");
+            message.innerHTML = "Guessed Train."
+        }
+    })
+
+    //clear button
+    let clearButton = select('#clearBtn');
+    clearButton.mousePressed(function() {
+        message.innerHTML = ""
+        background(255);
+    });
+    
 }
 
 
@@ -76,4 +114,9 @@ function prepareData(category, data, label){
 }
 
 function draw(){
+    strokeWeight(8)
+    stroke(0)
+    if (mouseIsPressed) {
+        line(pmouseX, pmouseY, mouseX, mouseY);
+    }    
 }

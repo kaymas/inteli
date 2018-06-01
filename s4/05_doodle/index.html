@@ -11,7 +11,19 @@
     <script src="lib/matrix.js"></script>
     <script src="lib/neural.js"></script>
     <script src="train_test.js"></script>
-    <script src="sketch.js"></script>
+    <style>
+        canvas{
+            border: 1px solid black;
+        }
+    </style>
 </head>
-<body></body>
+<body>
+    <button id="trainBtn">train</button>
+	<button id="testBtn">test</button>
+	<button id="guessBtn">guess</button>
+    <button id="clearBtn">clear</button>
+    <p id="message">Train and draw on canvas before guessing.</p>
+    <br>
+    <script src="sketch.js"></script>
+</body>
 </html>
